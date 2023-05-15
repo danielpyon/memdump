@@ -10,5 +10,10 @@ int main() {
     std::cout << result << std::endl;
     memlib::Process p(24381);
 
+    auto vmmap = p.GetVMMap();
+    for (const auto& e : *vmmap) {
+        std::cout << e.name << std::endl;
+    }
+
     delete[] result;
 }

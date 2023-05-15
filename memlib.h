@@ -4,10 +4,13 @@
 #include <sys/uio.h>
 #include <stdint.h>
 #include <memory>
-#include <list>
+#include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include <istream>
+#include <iterator>
 
 namespace memlib {
 
@@ -35,7 +38,7 @@ class Process {
   public:
     Process(pid_t pid);
     std::string GetName() { return _name; };
-    std::list<memlib::VMMapEntry>* GetVMMap();
+    std::vector<memlib::VMMapEntry>* GetVMMap();
 
   private:
     pid_t _pid;
