@@ -2,10 +2,24 @@
 #define MEMLIB_H
 
 #include <sys/uio.h>
+#include <stdint.h>
+#include <memory>
 
 namespace memlib {
 
-int f();
+class MemoryTool {
+  public:
+    MemoryTool(pid_t pid) : _pid(pid) { };
+    ~MemoryTool() { };
+    MemoryTool(const MemoryTool& rhs) = delete;
+
+    bool ReadMem(char* start, const uint32_t len,
+                 std::unique_ptr<char*>* result);
+    bool WriteMem();
+
+  private:
+    pid_t _pid;
+};
 
 }
 
