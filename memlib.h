@@ -4,6 +4,9 @@
 #include <sys/uio.h>
 #include <dirent.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <memory>
 #include <vector>
 #include <iostream>

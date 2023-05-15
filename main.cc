@@ -6,8 +6,7 @@ int main() {
     auto pids = memlib::get_all_pids();
     for(const auto& x : *pids) {
         std::cout << x << " ";
-        std::cout << memlib::Process(x);
-        break;
+        // std::cout << memlib::Process(x);
     }
     std::cout << std::endl;
     delete pids;

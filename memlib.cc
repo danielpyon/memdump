@@ -111,10 +111,20 @@ std::vector<pid_t>* memlib::get_all_pids() {
     struct dirent *dir;
     auto pids = new std::vector<pid_t>;
 
+    struct stat st;
+
     if (d) {
         while ((dir = readdir(d)) != NULL) {
             char* name = dir->d_name;
-            if (is_number(name)) {
+            std::string curr_path("/proc/");
+            curr_path += name;
+
+            if (stat(curr_path.c_str(), &st) == -1) {
+                perror("stat");
+                continue;
+            }
+
+            if (st.st_uid == getuid() && is_number(name)) {
                 pid_t pid = static_cast<pid_t>(atoi(name));
                 pids->push_back(pid);
             }
