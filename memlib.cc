@@ -1,9 +1,15 @@
 #include "memlib.h"
 
 static constexpr int kProcMapNameIdx = 5;
-static constexpr int kProcMapPIDIdx = 1;
+static constexpr int kProcMapPermsIdx = 1;
 static constexpr int kProcMapAddrIdx = 0;
 static std::vector<std::string> split(std::string const &input);
+
+// get the permission bits from a string
+static uint8_t perms(const std::string& rwx);
+
+// get start, end address from string
+static std::pair<char*, char*> start_end_address(const std::string& address);
 
 bool memlib::MemoryTool::ReadMem(char* const start, const uint32_t len,
                                  char** result) {
@@ -57,7 +63,6 @@ std::vector<memlib::VMMapEntry>* memlib::Process::GetVMMap() {
 
     std::ifstream proc(filename);
     std::string line;
-    
     auto vmmap = new std::vector<memlib::VMMapEntry>();
 
     if (proc.is_open()) {
@@ -66,11 +71,15 @@ std::vector<memlib::VMMapEntry>* memlib::Process::GetVMMap() {
             memlib::VMMapEntry curr;
 
             if (toks.size() >= kProcMapNameIdx + 1) {
-                curr.name = std::string(toks[kProcMapNameIdx]);
+                curr.name = toks[kProcMapNameIdx];
             }
 
-            if (toks.size() >= kProcMapAddrIdx + 1) {
-                // toks[kProcMapAddrIdx];
+            if (toks.size() >= kProcMapPermsIdx + 1) {
+                curr.perms = perms(toks[kProcMapPermsIdx]);
+
+                // auto pr(start_end_address(toks[kProcMapAddrIdx]));
+                // curr.start = pr.first;
+                // curr.end = pr.second;
             }
 
             vmmap->push_back(curr);
@@ -86,4 +95,29 @@ static std::vector<std::string> split(std::string const &input) {
     std::vector<std::string> ret((std::istream_iterator<std::string>(buffer)), 
                                   std::istream_iterator<std::string>());
     return ret;
+}
+
+static uint8_t perms(const std::string& rwx) {
+    uint8_t ret = 0;
+    if (rwx.at(0) == 'r')
+        ret |= 0b100;
+    if (rwx.at(1) == 'w')
+        ret |= 0b10;
+    if (rwx.at(2) == 'x')
+        ret |= 0b1;
+    return ret;
+}
+
+static std::pair<char*, char*> start_end_address(const std::string& address) {
+    std::string delim("-");
+    auto delim_idx = address.find(delim);
+    std::string start(address.substr(0, delim_idx));
+    std::string end(address.substr(delim_idx));
+
+    uint64_t start_address, end_address;
+    start_address = std::stoul(start, nullptr, 16);
+    end_address = std::stoul(end, nullptr, 16);
+
+    return std::make_pair(reinterpret_cast<char*>(start_address),
+                          reinterpret_cast<char*>(end_address));
 }
