@@ -12,6 +12,10 @@
 #include <istream>
 #include <iterator>
 
+#define READABLE(x) ((x >> 2) & 1)
+#define WRITABLE(x) ((x >> 1) & 1)
+#define EXECUTABLE(x) ((x) & 1)
+
 namespace memlib {
 
 class MemoryTool {
@@ -29,7 +33,8 @@ class MemoryTool {
 };
 
 struct VMMapEntry {
-    char* start, end;
+    char* start;
+    char* end;
     uint8_t perms;
     std::string name;
 };
