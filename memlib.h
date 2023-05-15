@@ -37,18 +37,40 @@ struct VMMapEntry {
     char* end;
     uint8_t perms;
     std::string name;
+    friend std::ostream& operator<<(std::ostream &out,
+                                    const VMMapEntry& entry) {
+        if (!entry.name.empty()) {
+            out << entry.name << ": ";
+        } else {
+            out << "(Unknown): ";
+        }
+
+        out << std::hex << static_cast<void*>(entry.start) << "-";
+        out << static_cast<void*>(entry.end) << " ";
+
+        if (READABLE(entry.perms))
+            out << "r";
+        if (WRITABLE(entry.perms))
+            out << "w";
+        if (EXECUTABLE(entry.perms))
+            out << "x";
+        return out;
+    }
 };
 
 class Process {
   public:
     Process(pid_t pid);
-    std::string GetName() { return _name; };
-    std::vector<memlib::VMMapEntry>* GetVMMap();
+    std::string GetName() const { return _name; };
+    std::vector<VMMapEntry>* GetVMMap() const;
+    pid_t GetPID() const { return _pid; };
 
   private:
     pid_t _pid;
     std::string _name;
 };
+
+std::ostream& operator<<(std::ostream& out, const memlib::Process& proc);
 
 }
 

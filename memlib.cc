@@ -56,7 +56,7 @@ memlib::Process::Process(pid_t pid) {
     }
 }
 
-std::vector<memlib::VMMapEntry>* memlib::Process::GetVMMap() {
+std::vector<memlib::VMMapEntry>* memlib::Process::GetVMMap() const {
     std::string filename("/proc/");
     filename += std::to_string(_pid);
     filename += "/maps";
@@ -88,6 +88,20 @@ std::vector<memlib::VMMapEntry>* memlib::Process::GetVMMap() {
     }
 
     return vmmap;
+}
+
+std::ostream& memlib::operator<<(std::ostream& out,
+                                 const memlib::Process& proc) {
+    out << "Process " << proc.GetName() << std::endl;
+
+    std::unique_ptr<std::vector<memlib::VMMapEntry>> vmmap(proc.GetVMMap());
+
+    for (const auto& entry : *vmmap) {
+        out << entry;
+        out << std::endl;
+    }
+
+    return out;
 }
 
 static std::vector<std::string> split(std::string const &input) { 
