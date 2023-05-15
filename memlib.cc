@@ -11,6 +11,8 @@ static uint8_t perms(const std::string& rwx);
 // get start, end address from string
 static std::pair<char*, char*> start_end_address(const std::string& address);
 
+static bool is_number(const std::string& str);
+
 bool memlib::MemoryTool::ReadMem(char* const start, const uint32_t len,
                                  char** result) {
     struct iovec local, remote;
@@ -104,6 +106,25 @@ std::ostream& memlib::operator<<(std::ostream& out,
     return out;
 }
 
+std::vector<pid_t>* memlib::get_all_pids() {
+    DIR *d = opendir("/proc/");
+    struct dirent *dir;
+    auto pids = new std::vector<pid_t>;
+
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            char* name = dir->d_name;
+            if (is_number(name)) {
+                pid_t pid = static_cast<pid_t>(atoi(name));
+                pids->push_back(pid);
+            }
+        }
+        closedir(d);
+    }
+
+    return pids;
+}
+
 static std::vector<std::string> split(std::string const &input) { 
     std::istringstream buffer(input);
     std::vector<std::string> ret((std::istream_iterator<std::string>(buffer)), 
@@ -134,4 +155,18 @@ static std::pair<char*, char*> start_end_address(const std::string& address) {
 
     return std::make_pair(reinterpret_cast<char*>(start_address),
                           reinterpret_cast<char*>(end_address));
+}
+
+static bool is_number(const std::string& str) {
+    if (str.empty()) {
+        return false;
+    }
+
+    for (auto it(str.begin()); it != str.end(); it++) {
+        if (*it < '0' || *it > '9') {
+            return false;
+        }
+    }
+
+    return true;
 }

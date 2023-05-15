@@ -2,6 +2,7 @@
 #define MEMLIB_H
 
 #include <sys/uio.h>
+#include <dirent.h>
 #include <stdint.h>
 #include <memory>
 #include <vector>
@@ -71,6 +72,8 @@ class Process {
 };
 
 std::ostream& operator<<(std::ostream& out, const memlib::Process& proc);
+
+std::vector<pid_t>* get_all_pids();
 
 }
 

@@ -3,6 +3,16 @@
 #include "memlib.h"
 
 int main() {
+    auto pids = memlib::get_all_pids();
+    for(const auto& x : *pids) {
+        std::cout << x << " ";
+        std::cout << memlib::Process(x);
+        break;
+    }
+    std::cout << std::endl;
+    delete pids;
+    return 0;
+
     memlib::Process p(60331);
     std::cout << p << std::endl;
 
