@@ -72,7 +72,6 @@ std::vector<memlib::VMMapEntry>* memlib::Process::GetVMMap() {
 
             if (toks.size() >= kProcMapNameIdx + 1) {
                 curr.name = toks[kProcMapNameIdx];
-                curr.name = toks[kProcMapNameIdx];
             }
 
             if (toks.size() >= kProcMapPermsIdx + 1) {
