@@ -1,0 +1,4 @@
+- get vmmap of process
+- pid->name
+- list all pids
+- write memory

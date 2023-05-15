@@ -16,11 +16,14 @@ class MemoryTool {
 
     bool ReadMem(char* start, const uint32_t len,
                  std::unique_ptr<char*>* result);
-    bool WriteMem();
+    bool WriteMem(char* start, const uint32_t len,
+                  const char* data);
 
   private:
     pid_t _pid;
 };
+
+
 
 }
 

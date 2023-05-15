@@ -20,3 +20,8 @@ bool memlib::MemoryTool::ReadMem(char* const start, const uint32_t len,
     *result = std::make_unique<char*>(buf);
     return true;
 }
+
+bool memlib::MemoryTool::WriteMem(char* start, const uint32_t len,
+                                  const char* data) {
+    return false;
+}
