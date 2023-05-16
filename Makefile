@@ -1,24 +1,23 @@
 CXX = g++
-CFLAGS = -g -Wall -std=c++17
-
+CFLAGS = -g -Wall -std=c++17 `pkg-config --cflags --libs gtkmm-3.0`
 BUILD = './build/'
 
 all: memdump
 
 memlib.o: memlib.cc memlib.h
-	$(CXX) $(CPPFLAGS) -c $<
+	$(CXX) -g -Wall -std=c++17 -c $<
 
 main.o: main.cc
-	$(CXX) $(CPPFLAGS) -c $<
+	$(CXX) $(CFLAGS) -c $<
 
-memdump: main.o memlib.o
+menu.o: menu.cc menu.h
+	$(CXX) $(CFLAGS) -c $<
+
+dump.o: dump.cc dump.h
+	$(CXX) $(CFLAGS) -c $<
+
+memdump: main.o memlib.o menu.o dump.o
 	$(CXX) $(CFLAGS) -o $(BUILD)$@ $^
-
-# memdump: $(OBJS)
-#  	$(CXX) $(CFLAGS) -o $@ $^ `pkg-config --cflags --libs gtkmm-3.0`
-
-# .cc.o: $(HEADERS)
-# 	$(CXX) $(CFLAGS) -c $< `pkg-config --cflags --libs gtkmm-3.0`
 
 clean: FORCE
 	/bin/rm -f *~ *.o $(BUILD)memdump

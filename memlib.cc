@@ -36,12 +36,11 @@ bool memlib::MemoryTool::ReadMem(char* const start, const uint32_t len,
 
 bool memlib::MemoryTool::WriteMem(char* start, const uint32_t len,
                                   const char* data) {
+    // TODO: write this
     return false;
 }
 
-memlib::Process::Process(pid_t pid) {
-    _pid = pid;
-
+memlib::Process::Process(pid_t pid) : _pid(pid) {
     // get process name
     std::string filename("/proc/");
     filename += std::to_string(pid);
