@@ -54,7 +54,6 @@ Menu::Menu() {
     m_Combo.pack_start(m_cell);
 
     // add the ComboBox to the window.
-    // add(m_Combo);
     m_box.pack_start(m_Combo);
 
     // connect signal handler:

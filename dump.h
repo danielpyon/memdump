@@ -1,6 +1,7 @@
 #ifndef MEMDUMP_DUMP_H
 #define MEMDUMP_DUMP_H
 
+#include <gtkmm.h>
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
 #include <sigc++/sigc++.h>
@@ -26,6 +27,10 @@ class Dump : public Gtk::Window {
     void menu_win_close();
 
     Gtk::Button m_button;
+    Gtk::ScrolledWindow m_ScrolledWindow;
+    Gtk::Grid m_Grid;
+    Gtk::Box m_box;
+
     Menu* menuw;
     ProcessHandler proc_handler;
 };
