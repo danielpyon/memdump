@@ -10,7 +10,7 @@
 
 class Dump : public Gtk::Window {
   public:
-    Dump();
+    Dump(const Glib::RefPtr<Gtk::Application>& app);
     virtual ~Dump();
 
     // handle process selection
@@ -26,10 +26,14 @@ class Dump : public Gtk::Window {
     void on_button_clicked();
     void menu_win_close();
 
-    Gtk::Button m_button;
+    void on_action_select_process();
+
     Gtk::ScrolledWindow m_ScrolledWindow;
     Gtk::Grid m_Grid;
     Gtk::Box m_box;
+
+    Glib::RefPtr<Gtk::Builder> m_refBuilder;
+    Glib::RefPtr<Gio::SimpleActionGroup> m_refActionGroup;
 
     Menu* menuw;
     ProcessHandler proc_handler;
