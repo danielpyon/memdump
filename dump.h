@@ -14,7 +14,7 @@ class Dump : public Gtk::Window {
 
   protected:
     void on_button_clicked();
-    void hello_win_close();
+    void menu_win_close();
     Gtk::Button m_button;
     Menu* menuw;
 };

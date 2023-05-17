@@ -3,6 +3,7 @@
 
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
+#include <gtkmm/box.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/liststore.h>
 
@@ -26,10 +27,12 @@ class Menu : public Gtk::Window {
     };
 
     ModelColumns m_Columns;
-    
+
     Gtk::ComboBox m_Combo;
     Gtk::CellRendererText m_cell;
     Glib::RefPtr<Gtk::ListStore> m_refTreeModel;
+    Gtk::Button m_button;
+    Gtk::Box m_box;
 };
 
 #endif

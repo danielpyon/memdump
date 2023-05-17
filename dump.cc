@@ -26,10 +26,10 @@ void Dump::on_button_clicked() {
     std::cout << "clicked!" << std::endl;
 
     menuw = new Menu;
-    menuw->signal_hide().connect(sigc::mem_fun(*this, &Dump::hello_win_close));
+    menuw->signal_hide().connect(sigc::mem_fun(*this, &Dump::menu_win_close));
     menuw->show();
 }
 
-void Dump::hello_win_close() {
+void Dump::menu_win_close() {
     
 }
