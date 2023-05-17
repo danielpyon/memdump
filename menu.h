@@ -6,16 +6,22 @@
 #include <gtkmm/box.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/liststore.h>
+#include <sigc++/sigc++.h>
+#include "memlib.h"
 
 class Menu : public Gtk::Window {
-
   public:
     Menu();
     virtual ~Menu();
+    typedef sigc::signal<void, pid_t> pid_signal_t;
+    pid_signal_t signal_process_selection();
 
   protected:
+    pid_signal_t m_signal_process_selection;
+
     void on_button_clicked();
     void on_combo_changed();
+    Gtk::TreeModel::Row get_selected_row();
 
     class ModelColumns : public Gtk::TreeModel::ColumnRecord {
       public:

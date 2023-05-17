@@ -4,13 +4,14 @@
 #include "memlib.h"
 
 Menu::Menu() {
+    set_resizable(false);
+
     set_title("Select a process");
-    set_border_width(250);
+    set_border_width(50);
 
     add(m_box);
 
     // create the Tree model:
-    // m_refTreeModel = Gtk::TreeStore::create(m_Columns);
     m_refTreeModel = Gtk::ListStore::create(m_Columns);
     m_Combo.set_model(m_refTreeModel);
 
@@ -80,20 +81,28 @@ Menu::~Menu() {
 }
 
 void Menu::on_combo_changed() {
-    Gtk::TreeModel::iterator iter = m_Combo.get_active();
-    if(iter) {
-        Gtk::TreeModel::Row row = *iter;
-        if(row) {
-            pid_t pid = static_cast<pid_t>(row[m_Columns.m_col_pid]);
-            Glib::ustring name = row[m_Columns.m_col_name];
+    auto row = get_selected_row();
+    if (row) {
+        pid_t pid = static_cast<pid_t>(row[m_Columns.m_col_pid]);
+        Glib::ustring name = row[m_Columns.m_col_name];
 
-            std::cout << " PID=" << pid << ", name=" << name << std::endl;
-        }
+        std::cout << " PID=" << pid << ", name=" << name << std::endl;
     }
-    else
-        std::cout << "invalid iter" << std::endl;
 }
 
 void Menu::on_button_clicked() {
-    std::cout << "clicky clicky" << std::endl;
+    auto row = get_selected_row();
+    if (row) {
+        pid_t pid = static_cast<pid_t>(row[m_Columns.m_col_pid]);
+        m_signal_process_selection.emit(pid);
+    }
+}
+
+Menu::pid_signal_t Menu::signal_process_selection() {
+  return m_signal_process_selection;
+}
+
+Gtk::TreeModel::Row Menu::get_selected_row() {
+    Gtk::TreeModel::iterator iter = m_Combo.get_active();
+    return *iter;
 }
