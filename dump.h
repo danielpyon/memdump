@@ -27,6 +27,7 @@ class Dump : public Gtk::Window {
     void menu_win_close();
 
     void on_action_select_process();
+    void on_action_select_addr();
 
     Gtk::ScrolledWindow m_ScrolledWindow;
     Gtk::Grid m_Grid;
@@ -37,6 +38,10 @@ class Dump : public Gtk::Window {
 
     Menu* menuw;
     ProcessHandler proc_handler;
+
+    // memorytool, process for current pid
+    std::unique_ptr<memlib::MemoryTool> mt;
+    std::unique_ptr<memlib::Process> proc;
 };
 
 #endif

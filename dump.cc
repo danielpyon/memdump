@@ -2,10 +2,10 @@
 #include "dump.h"
 
 Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
-: m_box(Gtk::ORIENTATION_VERTICAL), proc_handler(*this){
+: m_box(Gtk::ORIENTATION_VERTICAL), proc_handler(*this) {
     menuw = nullptr;
 
-    set_size_request(1200, 500);
+    set_size_request(1210, 500);
     set_resizable(false);
     add(m_box);
 
@@ -13,13 +13,17 @@ Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
     // define the actions:
     m_refActionGroup = Gio::SimpleActionGroup::create();
     m_refActionGroup->add_action("select",
-        sigc::mem_fun(*this, &Dump::on_action_select_process) );
+        sigc::mem_fun(*this, &Dump::on_action_select_process));
+    m_refActionGroup->add_action("addr",
+        sigc::mem_fun(*this, &Dump::on_action_select_addr));
+
     insert_action_group("actions", m_refActionGroup);
 
     // define how the actions are presented in the menus and toolbars:
     m_refBuilder = Gtk::Builder::create();
 
     app->set_accel_for_action("actions.select", "<Primary>p");
+    app->set_accel_for_action("actions.addr", "<Primary>a");
 
     Glib::ustring ui_info =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -44,6 +48,23 @@ Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
         "        <property name=\"homogeneous\">True</property>"
         "    </packing>"
         "    </child>"
+
+        "    <child>"
+        "    <object class=\"GtkToolButton\" id=\"addr\">"
+        "        <property name=\"action_name\">actions.addr</property>"
+        "        <property name=\"visible\">True</property>"
+        "        <property name=\"can_focus\">False</property>"
+        "        <property name=\"is_important\">True</property>"
+        "        <property name=\"label\" translatable=\"yes\">Select Address</property>"
+        "        <property name=\"use_underline\">True</property>"
+        "        <property name=\"stock_id\">gtk-edit</property>"
+        "    </object>"
+        "    <packing>"
+        "        <property name=\"expand\">False</property>"
+        "        <property name=\"homogeneous\">True</property>"
+        "    </packing>"
+        "    <child>"
+
         "</object>"
         "</interface>";
 
@@ -70,8 +91,8 @@ Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
     m_ScrolledWindow.add(m_Grid);
 
     // default mem
-    for(int i = 0; i < 32; i++) {
-        for(int j = 0; j < 32; j++) {
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 10; j++) {
             auto pButton = Gtk::make_managed<Gtk::ToggleButton>("--");
             m_Grid.attach(*pButton, i, j);
         }
@@ -80,9 +101,7 @@ Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
     show_all_children();
 }
 
-Dump::~Dump() {
-    
-}
+Dump::~Dump() { }
 
 void Dump::menu_win_close() {
     delete menuw;
@@ -91,6 +110,12 @@ void Dump::menu_win_close() {
 
 void Dump::ProcessHandler::on_process_selection(pid_t pid) {
     std::cout << "user selected pid " << pid << std::endl;
+
+    parent.proc.reset(new memlib::Process(pid));
+    parent.mt.reset(new memlib::MemoryTool(pid));
+
+    // add toolbar item: view vmmap, jump to address
+    
 }
 
 void Dump::on_action_select_process() {
@@ -105,3 +130,17 @@ void Dump::on_action_select_process() {
         &Dump::ProcessHandler::on_process_selection));
     menuw->show();
 }
+
+void Dump::on_action_select_addr() {
+    if (menuw) {
+        delete menuw;
+        menuw = nullptr;
+    }
+
+    menuw = new Menu;
+    menuw->signal_hide().connect(sigc::mem_fun(*this, &Dump::menu_win_close));
+    menuw->signal_process_selection().connect(sigc::mem_fun(this->proc_handler,
+        &Dump::ProcessHandler::on_process_selection));
+    menuw->show();
+}
+

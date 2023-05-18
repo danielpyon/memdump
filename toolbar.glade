@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
+<interface>
+<requires lib="gtk+" version="3.20"/>
+<object class="GtkToolbar" id="toolbar">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+    <object class="GtkToolButton" id="select">
+        <property name="action_name">actions.select</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="is_important">True</property>
+        <property name="label" translatable="yes">Select Process</property>
+        <property name="use_underline">True</property>
+        <property name="stock_id">gtk-add</property>
+    </object>
+    <packing>
+        <property name="expand">False</property>
+        <property name="homogeneous">True</property>
+    </packing>
+    </child>
+    <child>
+    <object class="GtkToolButton" id="addr">
+        <property name="action_name">actions.addr</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="is_important">True</property>
+        <property name="label" translatable="yes">Select Address</property>
+        <property name="use_underline">True</property>
+    </object>
+    <child>
+</object>
+</interface>

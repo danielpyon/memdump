@@ -94,6 +94,7 @@ void Menu::on_button_clicked() {
     if (row) {
         pid_t pid = static_cast<pid_t>(row[m_Columns.m_col_pid]);
         m_signal_process_selection.emit(pid);
+        close();
     }
 }
 
