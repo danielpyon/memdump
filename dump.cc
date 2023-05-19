@@ -1,9 +1,24 @@
 #include <iostream>
+#include <thread>
+#include <unistd.h>
+#include <atomic>
+
 #include "dump.h"
+
+#define ROWS 10
+#define COLS 20
+
+std::atomic_bool g_stop_thread = false;
+
+static void poll_memory(memlib::MemoryTool& mt, memlib::Process& proc,
+                        Gtk::Grid& grid, char* addr);
+
+Dump* g_dump = nullptr;
 
 Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
 : m_box(Gtk::ORIENTATION_VERTICAL), proc_handler(*this) {
     menuw = nullptr;
+    g_dump = this;
 
     set_size_request(1210, 500);
     set_resizable(false);
@@ -48,7 +63,6 @@ Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
         "        <property name=\"homogeneous\">True</property>"
         "    </packing>"
         "    </child>"
-
         "    <child>"
         "    <object class=\"GtkToolButton\" id=\"addr\">"
         "        <property name=\"action_name\">actions.addr</property>"
@@ -63,7 +77,7 @@ Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
         "        <property name=\"expand\">False</property>"
         "        <property name=\"homogeneous\">True</property>"
         "    </packing>"
-        "    <child>"
+        "    </child>"
 
         "</object>"
         "</interface>";
@@ -91,8 +105,8 @@ Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
     m_ScrolledWindow.add(m_Grid);
 
     // default mem
-    for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < 10; j++) {
+    for (int i = 0; i < COLS; i++) {
+        for (int j = 0; j < ROWS; j++) {
             auto pButton = Gtk::make_managed<Gtk::ToggleButton>("--");
             m_Grid.attach(*pButton, i, j);
         }
@@ -111,11 +125,26 @@ void Dump::menu_win_close() {
 void Dump::ProcessHandler::on_process_selection(pid_t pid) {
     std::cout << "user selected pid " << pid << std::endl;
 
-    parent.proc.reset(new memlib::Process(pid));
     parent.mt.reset(new memlib::MemoryTool(pid));
+    parent.proc.reset(new memlib::Process(pid));
 
-    // add toolbar item: view vmmap, jump to address
-    
+    // set title to process name
+    parent.set_title(parent.proc->GetName());
+
+    // get the first mapped address in virtual memory
+    auto vmmap(parent.proc->GetVMMap());
+    char* addr = vmmap->front().start;
+    delete vmmap;
+
+    // spawn thread to monitor memory
+    g_stop_thread = true;
+    if (parent.curr_thd.joinable())
+        parent.curr_thd.join();
+    g_stop_thread = false;
+
+    parent.curr_thd = std::thread(poll_memory, std::ref(*parent.mt),
+                                  std::ref(*parent.proc),
+                                  std::ref(parent.m_Grid), addr);
 }
 
 void Dump::on_action_select_process() {
@@ -144,3 +173,55 @@ void Dump::on_action_select_addr() {
     menuw->show();
 }
 
+// TODO: either figure out how to pass dump to this function
+// or use Glib::SignalTimeout instead
+static void poll_memory(memlib::MemoryTool& mt, memlib::Process& proc,
+                        Gtk::Grid& grid, char* addr) {
+    while (true) {
+        if (g_stop_thread) {
+            std::cout << "exiting thread..." << std::endl;
+            return;
+        }
+
+        char* data;
+        if (addr == nullptr || !mt.ReadMem(addr, COLS * ROWS, &data)) {
+            // just set empty cells
+            for (int i = 0; i < COLS; i++) {
+                for (int j = 0; j < ROWS; j++) {
+                    Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
+                        grid.get_child_at(i, j)
+                    );
+                }
+            }
+        } else {
+            for (int i = 0; i < COLS; i++) {
+                for (int j = 0; j < ROWS; j++) {
+                    Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
+                        grid.get_child_at(i, j)
+                    );
+                    // widget->set_label(label);
+                    Glib::signal_idle().connect(sigc::mem_fun(*g_dump,
+                        &Dump::set_label, i, j, "x"));
+                }
+            }
+            delete data;
+        }
+
+        sleep(2);
+    }
+/*
+char buffer[32];
+sprintf(buffer, "button (%d,%d)\n", i, j);
+auto pButton = Gtk::make_managed<Gtk::ToggleButton>(buffer);
+m_Grid.attach(*pButton, i, j);
+*/
+}
+
+bool Dump::set_label(int i, int j, char* label) {
+    std::cout<<"called!"<<std::endl;
+    Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
+        m_Grid.get_child_at(i, j)
+    );
+    widget->set_label(Glib::ustring(label));
+    return false;
+}

@@ -73,7 +73,6 @@ Menu::Menu() {
 Menu::~Menu() {
     Gtk::TreeIter iList = m_refTreeModel->get_iter("0");
     while (iList) {
-        std::cout << (*iList)[m_Columns.m_col_name] << std::endl;
         ++iList;
     }
     m_refTreeModel->clear();

@@ -27,6 +27,7 @@ bool memlib::MemoryTool::ReadMem(char* const start, const uint32_t len,
     ssize_t status = process_vm_readv(_pid, &local, 1, &remote, 1, 0);
 
     if (status == -1 || status != len) {
+        delete buf;
         return false;
     }
 

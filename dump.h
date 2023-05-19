@@ -5,6 +5,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
 #include <sigc++/sigc++.h>
+#include <thread>
 
 #include "menu.h"
 
@@ -12,6 +13,7 @@ class Dump : public Gtk::Window {
   public:
     Dump(const Glib::RefPtr<Gtk::Application>& app);
     virtual ~Dump();
+    bool set_label(int i, int j, char* label)
 
     // handle process selection
     class ProcessHandler : public sigc::trackable {
@@ -40,8 +42,10 @@ class Dump : public Gtk::Window {
     ProcessHandler proc_handler;
 
     // memorytool, process for current pid
-    std::unique_ptr<memlib::MemoryTool> mt;
-    std::unique_ptr<memlib::Process> proc;
+    std::shared_ptr<memlib::MemoryTool> mt;
+    std::shared_ptr<memlib::Process> proc;
+
+    std::thread curr_thd;
 };
 
 #endif
