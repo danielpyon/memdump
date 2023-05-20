@@ -124,6 +124,7 @@ void Dump::ProcessHandler::on_process_selection(pid_t pid) {
     // get the first mapped address in virtual memory
     auto vmmap(parent.proc->GetVMMap());
     char* addr = vmmap->front().start;
+    std::cout << "viewing: " << std::hex << (void*)addr << std::endl;
     delete vmmap;
 
     // start examining memory
@@ -156,7 +157,7 @@ bool Dump::poll_memory(char* addr) {
                     m_Grid.get_child_at(i, j)
                 );
                 char buf[32];
-                sprintf(buf, "%x", data[i*COLS + j] & 0xff);
+                sprintf(buf, "%x", data[i + j * ROWS] & 0xff);
                 widget->set_label(Glib::ustring(buf));
             }
         }
