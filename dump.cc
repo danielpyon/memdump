@@ -126,20 +126,42 @@ void Dump::ProcessHandler::on_process_selection(pid_t pid) {
     char* addr = vmmap->front().start;
     delete vmmap;
 
+    // start examining memory
+    if (!parent.curr_conn.empty()) {
+        parent.curr_conn.disconnect();
+    }
+
     sigc::slot<bool()> slot = sigc::bind(sigc::mem_fun(parent,
         &Dump::poll_memory), addr);
-    parent.curr_conn = Glib::signal_timeout().connect(slot, 2000);
-
-    // spawn thread to monitor memory
-    /*
-    parent.curr_thd = std::thread(poll_memory, std::ref(*parent.mt),
-                                  std::ref(*parent.proc),
-                                  std::ref(parent.m_Grid), addr);
-    */
+    parent.curr_conn = Glib::signal_timeout().connect(slot, 1000);
 }
 
 bool Dump::poll_memory(char* addr) {
     std::cout << "polling memory..." << std::endl;
+    char* data;
+    if (addr == nullptr || !mt->ReadMem(addr, COLS * ROWS, &data)) {
+        // just set empty cells
+        for (int i = 0; i < COLS; i++) {
+            for (int j = 0; j < ROWS; j++) {
+                Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
+                    m_Grid.get_child_at(i, j)
+                );
+            }
+        }
+    } else {
+        // ReadMem succeeded
+        for (int i = 0; i < COLS; i++) {
+            for (int j = 0; j < ROWS; j++) {
+                Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
+                    m_Grid.get_child_at(i, j)
+                );
+                char buf[32];
+                sprintf(buf, "%x", data[i*COLS + j] & 0xff);
+                widget->set_label(Glib::ustring(buf));
+            }
+        }
+        delete data;
+    }
     return true;
 }
 
@@ -168,53 +190,3 @@ void Dump::on_action_select_addr() {
         &Dump::ProcessHandler::on_process_selection));
     menuw->show();
 }
-
-
-/*
-// https://developer-old.gnome.org/gtkmm-tutorial/stable/sec-timeouts.html.en
-// https://developer-old.gnome.org/gtkmm/unstable/classGtk_1_1Button.html#ad3f9e419fc13a942f679a8545f0d96b6
-// https://stackoverflow.com/questions/60949269/executing-gtk-functions-from-other-threads
-// https://docs.google.com/presentation/d/1Smniw6e0gAoOG5vAG4FQ9RKL27yixMOKgQgaaNZa3LE/edit#slide=id.g244bb57e590_0_0
-// TODO: either figure out how to pass dump to this function
-// or use Glib::SignalTimeout instead
-static void poll_memory(memlib::MemoryTool& mt, memlib::Process& proc,
-                        Gtk::Grid& grid, char* addr) {
-    while (true) {
-        if (g_stop_thread) {
-            std::cout << "exiting thread..." << std::endl;
-            return;
-        }
-
-        char* data;
-        if (addr == nullptr || !mt.ReadMem(addr, COLS * ROWS, &data)) {
-            // just set empty cells
-            for (int i = 0; i < COLS; i++) {
-                for (int j = 0; j < ROWS; j++) {
-                    Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
-                        grid.get_child_at(i, j)
-                    );
-                }
-            }
-        } else {
-            for (int i = 0; i < COLS; i++) {
-                for (int j = 0; j < ROWS; j++) {
-                    Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
-                        grid.get_child_at(i, j)
-                    );
-                    // widget->set_label(label);
-                    Glib::signal_idle().connect(sigc::mem_fun(*g_dump,
-                        &Dump::set_label, i, j, "x"));
-                }
-            }
-            delete data;
-        }
-
-        sleep(2);
-    }
-/*
-char buffer[32];
-sprintf(buffer, "button (%d,%d)\n", i, j);
-auto pButton = Gtk::make_managed<Gtk::ToggleButton>(buffer);
-m_Grid.attach(*pButton, i, j);
-*/
-//}

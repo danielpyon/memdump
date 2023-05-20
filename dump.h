@@ -45,7 +45,6 @@ class Dump : public Gtk::Window {
     std::shared_ptr<memlib::MemoryTool> mt;
     std::shared_ptr<memlib::Process> proc;
 
-    std::thread curr_thd;
     sigc::connection curr_conn;
 };
 
