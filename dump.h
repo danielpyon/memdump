@@ -13,7 +13,6 @@ class Dump : public Gtk::Window {
   public:
     Dump(const Glib::RefPtr<Gtk::Application>& app);
     virtual ~Dump();
-    bool set_label(int i, int j, char* label)
 
     // handle process selection
     class ProcessHandler : public sigc::trackable {
@@ -30,6 +29,7 @@ class Dump : public Gtk::Window {
 
     void on_action_select_process();
     void on_action_select_addr();
+    bool poll_memory(char* addr);
 
     Gtk::ScrolledWindow m_ScrolledWindow;
     Gtk::Grid m_Grid;
@@ -46,6 +46,7 @@ class Dump : public Gtk::Window {
     std::shared_ptr<memlib::Process> proc;
 
     std::thread curr_thd;
+    sigc::connection curr_conn;
 };
 
 #endif

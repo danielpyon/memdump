@@ -1,24 +1,14 @@
 #include <iostream>
-#include <thread>
 #include <unistd.h>
-#include <atomic>
 
 #include "dump.h"
 
 #define ROWS 10
 #define COLS 20
 
-std::atomic_bool g_stop_thread = false;
-
-static void poll_memory(memlib::MemoryTool& mt, memlib::Process& proc,
-                        Gtk::Grid& grid, char* addr);
-
-Dump* g_dump = nullptr;
-
 Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
 : m_box(Gtk::ORIENTATION_VERTICAL), proc_handler(*this) {
     menuw = nullptr;
-    g_dump = this;
 
     set_size_request(1210, 500);
     set_resizable(false);
@@ -136,15 +126,21 @@ void Dump::ProcessHandler::on_process_selection(pid_t pid) {
     char* addr = vmmap->front().start;
     delete vmmap;
 
-    // spawn thread to monitor memory
-    g_stop_thread = true;
-    if (parent.curr_thd.joinable())
-        parent.curr_thd.join();
-    g_stop_thread = false;
+    sigc::slot<bool()> slot = sigc::bind(sigc::mem_fun(parent,
+        &Dump::poll_memory), addr);
+    parent.curr_conn = Glib::signal_timeout().connect(slot, 2000);
 
+    // spawn thread to monitor memory
+    /*
     parent.curr_thd = std::thread(poll_memory, std::ref(*parent.mt),
                                   std::ref(*parent.proc),
                                   std::ref(parent.m_Grid), addr);
+    */
+}
+
+bool Dump::poll_memory(char* addr) {
+    std::cout << "polling memory..." << std::endl;
+    return true;
 }
 
 void Dump::on_action_select_process() {
@@ -173,6 +169,12 @@ void Dump::on_action_select_addr() {
     menuw->show();
 }
 
+
+/*
+// https://developer-old.gnome.org/gtkmm-tutorial/stable/sec-timeouts.html.en
+// https://developer-old.gnome.org/gtkmm/unstable/classGtk_1_1Button.html#ad3f9e419fc13a942f679a8545f0d96b6
+// https://stackoverflow.com/questions/60949269/executing-gtk-functions-from-other-threads
+// https://docs.google.com/presentation/d/1Smniw6e0gAoOG5vAG4FQ9RKL27yixMOKgQgaaNZa3LE/edit#slide=id.g244bb57e590_0_0
 // TODO: either figure out how to pass dump to this function
 // or use Glib::SignalTimeout instead
 static void poll_memory(memlib::MemoryTool& mt, memlib::Process& proc,
@@ -215,13 +217,4 @@ sprintf(buffer, "button (%d,%d)\n", i, j);
 auto pButton = Gtk::make_managed<Gtk::ToggleButton>(buffer);
 m_Grid.attach(*pButton, i, j);
 */
-}
-
-bool Dump::set_label(int i, int j, char* label) {
-    std::cout<<"called!"<<std::endl;
-    Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
-        m_Grid.get_child_at(i, j)
-    );
-    widget->set_label(Glib::ustring(label));
-    return false;
-}
+//}
