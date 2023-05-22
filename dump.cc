@@ -145,7 +145,13 @@ void Dump::ProcessHandler::on_process_selection(pid_t pid) {
 }
 
 void Dump::ProcessHandler::on_address_selection(char* addr) {
-    std::cout << "user selected address" << std::hex << addr << std::endl;
+    std::cout << "user selected address " << std::hex << (void*)addr << std::endl;
+    if (!parent.curr_conn.empty()) {
+        parent.curr_conn.disconnect();
+    }
+    sigc::slot<bool()> slot = sigc::bind(sigc::mem_fun(parent,
+        &Dump::poll_memory), addr);
+    parent.curr_conn = Glib::signal_timeout().connect(slot, 1000);
 }
 
 bool Dump::poll_memory(char* addr) {
@@ -158,6 +164,7 @@ bool Dump::poll_memory(char* addr) {
                 Gtk::ToggleButton* widget = static_cast<Gtk::ToggleButton*>(
                     m_Grid.get_child_at(i, j)
                 );
+                widget->set_label("--");
             }
         }
     } else {

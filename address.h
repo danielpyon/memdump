@@ -20,7 +20,11 @@ class Address : public Gtk::Window {
 
     void on_button_clicked();
 
+    std::shared_ptr<memlib::Process> proc;
+    std::vector<memlib::VMMapEntry>* vmmap;
+
     Gtk::Button m_button;
+    Gtk::Entry m_Entry;
 
     Gtk::Paned m_HPaned;
     Gtk::Paned m_VPaned;
