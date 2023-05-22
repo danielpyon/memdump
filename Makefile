@@ -16,7 +16,10 @@ menu.o: menu.cc menu.h
 dump.o: dump.cc dump.h
 	$(CXX) $(CFLAGS) -c $<
 
-memdump: main.o memlib.o menu.o dump.o
+address.o: address.cc address.h
+	$(CXX) $(CFLAGS) -c $<
+
+memdump: main.o memlib.o menu.o dump.o address.o
 	$(CXX) $(CFLAGS) -o $(BUILD)$@ $^
 
 clean: FORCE

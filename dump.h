@@ -8,6 +8,7 @@
 #include <thread>
 
 #include "menu.h"
+#include "address.h"
 
 class Dump : public Gtk::Window {
   public:
@@ -19,6 +20,7 @@ class Dump : public Gtk::Window {
       public:
         ProcessHandler(Dump& x): parent(x) { }
         void on_process_selection(pid_t pid);
+        void on_address_selection(char* addr);
       private:
         Dump& parent;
     };
@@ -26,6 +28,7 @@ class Dump : public Gtk::Window {
   protected:
     void on_button_clicked();
     void menu_win_close();
+    void addr_win_close();
 
     void on_action_select_process();
     void on_action_select_addr();
@@ -39,6 +42,7 @@ class Dump : public Gtk::Window {
     Glib::RefPtr<Gio::SimpleActionGroup> m_refActionGroup;
 
     Menu* menuw;
+    Address* addrw;
     ProcessHandler proc_handler;
 
     // memorytool, process for current pid

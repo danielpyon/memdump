@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include "dump.h"
+#include "address.h"
 
 #define ROWS 10
 #define COLS 20
@@ -9,6 +10,7 @@
 Dump::Dump(const Glib::RefPtr<Gtk::Application>& app)
 : m_box(Gtk::ORIENTATION_VERTICAL), proc_handler(*this) {
     menuw = nullptr;
+    addrw = nullptr;
 
     set_size_request(1210, 500);
     set_resizable(false);
@@ -112,6 +114,11 @@ void Dump::menu_win_close() {
     menuw = nullptr;
 }
 
+void Dump::addr_win_close() {
+    delete addrw;
+    addrw = nullptr;
+}
+
 void Dump::ProcessHandler::on_process_selection(pid_t pid) {
     std::cout << "user selected pid " << pid << std::endl;
 
@@ -135,6 +142,10 @@ void Dump::ProcessHandler::on_process_selection(pid_t pid) {
     sigc::slot<bool()> slot = sigc::bind(sigc::mem_fun(parent,
         &Dump::poll_memory), addr);
     parent.curr_conn = Glib::signal_timeout().connect(slot, 1000);
+}
+
+void Dump::ProcessHandler::on_address_selection(char* addr) {
+    std::cout << "user selected address" << std::hex << addr << std::endl;
 }
 
 bool Dump::poll_memory(char* addr) {
@@ -180,14 +191,19 @@ void Dump::on_action_select_process() {
 }
 
 void Dump::on_action_select_addr() {
-    if (menuw) {
-        delete menuw;
-        menuw = nullptr;
+    if (addrw) {
+        delete addrw;
+        addrw = nullptr;
     }
 
-    menuw = new Menu;
-    menuw->signal_hide().connect(sigc::mem_fun(*this, &Dump::menu_win_close));
-    menuw->signal_process_selection().connect(sigc::mem_fun(this->proc_handler,
-        &Dump::ProcessHandler::on_process_selection));
-    menuw->show();
+    if (!proc) {
+        return;
+    }
+
+    addrw = new Address(proc);
+
+    addrw->signal_hide().connect(sigc::mem_fun(*this, &Dump::addr_win_close));
+    addrw->signal_address_selection().connect(sigc::mem_fun(this->proc_handler,
+        &Dump::ProcessHandler::on_address_selection));
+    addrw->show();
 }
